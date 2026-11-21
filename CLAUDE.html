@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CLAUDE.md — Human-in-the-loop AI 的 LLM Wiki · HITL LLM Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f1e7;--ink:#1f2a2e;--muted:#5b6669;--line:#d9d0bf;--teal:#0f5257;--amber:#c8781b;--card:#fffdf8}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.8 "Noto Sans TC",system-ui,sans-serif}
+header{background:var(--teal);color:#fff;padding:12px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header a{color:#f5e3c8;text-decoration:none;font-size:15px} header b{font-family:"Noto Serif TC",serif;margin-right:auto}
+main{max-width:860px;margin:0 auto;padding:32px 22px 80px}
+h1,h2{font-family:"Noto Serif TC",serif;line-height:1.35} h1{font-size:30px} h2{font-size:23px;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px}
+a{color:var(--teal)} code{background:#ece5d6;padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:14px;line-height:1.5}
+pre code{background:none;padding:0} table{border-collapse:collapse;width:100%;font-size:15px;margin:1em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top} th{background:#ece5d6}
+blockquote{margin:1em 0;padding:8px 16px;background:#f5e3c8;border-left:4px solid var(--amber);border-radius:6px}
+.fm{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:18px}
+.mermaid{background:var(--card);text-align:center}
+</style></head><body>
+<header><b>HITL · LLM Wiki</b>
+<a href="index.html">首頁</a><a href="wiki/index.html">Wiki 索引</a>
+<a href="slides/index.html">教學簡報</a><a href="docs/workflow.html">Loop / Graph</a>
+<a href="docs/run-log.html">執行紀錄</a><a href="docs/reflection.html">反思</a></header>
+<main><h1>CLAUDE.md — Human-in-the-loop AI 的 LLM Wiki</h1>
+<blockquote>
+<p>本專案依照 Andrej Karpathy 的 LLM Wiki 模式（2026-04 gist）建立。
+你（LLM）是這個 Wiki 的維護者：<strong>人類負責挑資料、提問、做決定；你負責整理、交叉引用、檢查與記錄。</strong>
+任何操作前先讀完本文件。</p>
+</blockquote>
+<hr />
+<h2>1. 主題與範圍</h2>
+<ul>
+<li><strong>主題</strong>：Human-in-the-loop（HITL）AI：人在 AI 系統的哪裡、為什麼、怎麼參與。</li>
+<li><strong>用途</strong>：作為知識庫，產生一份給「<strong>會用 ChatGPT 但不懂原理的人</strong>」看的中文教學簡報。</li>
+<li><strong>範圍內</strong>：HITL 定義與類型、RLHF、自動化偏誤、人機互動設計準則、法規中的人類監督、AI Agent 的人類檢查點、真實案例。</li>
+<li><strong>範圍外</strong>：數學推導、特定框架的程式碼教學。遇到時只留一句話並標 <code>#out-of-scope</code>。</li>
+</ul>
+<h2>2. 三層架構</h2>
+<pre><code>raw/            ① 原始資料層（不可修改）
+wiki/           ② Wiki 層（LLM 撰寫與維護）
+  index.md        全部頁面的目錄，查詢時第一個讀
+  log.md          時間序紀錄，只能往下新增
+  overview.md     主題總覽（綜合所有來源）
+  sources/        每份資料一頁摘要  s&lt;N&gt;-&lt;slug&gt;.md
+  concepts/       每個概念一頁      &lt;kebab-case&gt;.md
+CLAUDE.md       ③ Schema 層（本文件，人與 LLM 共同演進）
+</code></pre>
+<ul>
+<li><code>index.md</code> 的來源表要有「作者／年份」，簡報的參考資料頁從這裡取。（v2）</li>
+<li><code>raw/</code> 存放 <strong>source card</strong>：書目、網址、閱讀筆記（重點萃取）。因為著作權，不存全文；引文每份最多一句、15 字（英文 words）以內。</li>
+<li><code>raw/</code> 建立後<strong>不再修改</strong>；若發現錯誤，在 <code>log.md</code> 記錄並於 Wiki 層修正。</li>
+</ul>
+<h2>3. 頁面格式</h2>
+<p>每個 Wiki 頁面開頭都要有 frontmatter：</p>
+<pre><code class="language-yaml">---
+title: 自動化偏誤（Automation bias）
+type: concept        # concept | source | overview | index | log
+sources: [S4, S5, S6]  # 這頁用到的來源（source 頁填自己）
+updated: 2026-11-21
+---
+</code></pre>
+<p><strong>引用規則（最重要）</strong>
+- 來源代號 <code>S1</code>–<code>S8</code>，對應 <code>wiki/sources/s&lt;N&gt;-*.md</code>。
+- 每一個<strong>事實性</strong>段落或條列項，句尾都要有 <code>[S#]</code>。
+- <strong>含有兩位數以上數字的那一行，同一行一定要有 <code>[S#]</code>，且該數字必須出現在被引用的來源頁中</strong>（v2，lint 自動檢查；見 log「lint 第 3 次執行」）。
+- 單位換算、自己的推論等不在來源中的內容，標 <code>（綜合）</code> 或 <code>（綜合：說明）</code>，lint 會略過，但簡報使用時仍需在講者備註說明。
+- 整理 concept 頁時，<strong>數字要連同它的條件一起搬</strong>（例如「40 次模擬、每次 12 小時」），不要只搬結果。（v2）
+- 頁面之間用相對連結：<code>[RLHF](rlhf.md)</code>、<code>[S2](../sources/s2-instructgpt.md)</code>。
+- 自己的綜合推論要標 <code>（綜合）</code>，不可假裝成來源的話。</p>
+<p><strong>語言</strong>：繁體中文；專有名詞第一次出現附英文，例如「自動化偏誤（automation bias）」。</p>
+<h2>4. 操作</h2>
+<h3>4.1 Ingest（一次一份資料）</h3>
+<ol>
+<li>讀資料 → 寫 <code>raw/s&lt;N&gt;-&lt;slug&gt;.md</code> source card。</li>
+<li><strong>先討論</strong>：向人類報告 3–5 個重點與「它跟現有 Wiki 哪裡衝突／補充」，等人類確認方向（或依已確認的大綱進行）。</li>
+<li><strong>後生成</strong>：寫 <code>wiki/sources/s&lt;N&gt;-*.md</code>。</li>
+<li>更新所有受影響的 <code>concepts/</code> 頁（一份資料通常會動到 2–5 頁）；沒有對應頁就新建。</li>
+<li>更新 <code>index.md</code>、<code>overview.md</code>。</li>
+<li>在 <code>log.md</code> 新增一筆：<code>## [日期] ingest | S&lt;N&gt; 標題</code>。</li>
+<li>執行 <code>python3 pipeline/lint_wiki.py</code>，有 ✗ 就修到通過。</li>
+</ol>
+<h3>4.2 Query（查詢）</h3>
+<ol>
+<li>先讀 <code>index.md</code> 找相關頁面，再讀頁面內容。</li>
+<li>回答要附 Wiki 頁面連結與 <code>[S#]</code>。</li>
+<li>有價值的答案可以存回 Wiki 成為新頁面，並記 log。</li>
+</ol>
+<h3>4.3 Lint（健康檢查）</h3>
+<p><code>python3 pipeline/lint_wiki.py</code> 會檢查：斷掉的連結、孤兒頁（沒有任何頁面連過來）、index 漏列、frontmatter 缺欄位、引用不存在的來源；
+v2 起另外檢查：含數字的行是否有 <code>[S#]</code>、數字能否在被引用的來源頁（concept → sources/）或原始卡片（sources/ → raw/）中找到。
+限制：lint 抓得到「寫錯、沒來源」的數字，抓不到「整理時漏掉的細節」，這類問題仍靠簡報檢查往回追。
+另外人工／LLM 需檢查：<strong>來源之間互相矛盾</strong>、<strong>過時的說法</strong>（例如法規日期）。發現時在相關頁面加 <code>&gt; ⚠️ 矛盾：…</code> 區塊並記 log。</p>
+<h2>5. 從 Wiki 產生簡報（slides/）</h2>
+<ol>
+<li><strong>規劃</strong>：寫 <code>slides/outline.md</code>，每張投影片列出：教學目標、要講的重點、引用的 Wiki 頁面。</li>
+<li><strong>查詢</strong>：每張投影片只能使用其 <code>wiki:</code> 欄位列出頁面中的內容（不可直接讀 raw/、不可用模型自己的記憶補內容）。</li>
+<li><strong>生成</strong>：產生 <code>slides/index.html</code>。每張投影片是
+   <code>&lt;section class="slide" data-wiki="concepts/rlhf.md sources/s2-instructgpt.md"&gt;</code>，
+   並在頁腳顯示來源 <code>[S#]</code>。</li>
+<li><strong>檢查</strong>：<code>python3 pipeline/check_slides.py</code>
+   - 每個 <code>data-wiki</code> 頁面都存在；
+   - 投影片上出現的每個數字，都能在它引用的 Wiki 頁面中找到（防止編造數字）；
+   - 每張投影片內文不超過 120 個中文字（教學可讀性）；
+   - 頁腳列出的 <code>[S#]</code> 必須是所引用 Wiki 頁面的 <code>sources</code> 之一。</li>
+<li>檢查失敗 → <strong>只重新生成失敗的那張</strong>；同一張重試 3 次仍失敗 → 回到 Wiki 補資料（重新 ingest 或修正 concept 頁），並記 log。</li>
+<li>最後由人類檢視整份簡報（人類檢查點）。</li>
+</ol>
+<p>教學結構固定為：<strong>引起動機 → 定義 → 機制 → 陷阱 → 怎麼做好 → 規範 → 新趨勢 → 案例 → 帶走的習慣 → 總結</strong>，中間至少一個互動問題。</p>
+<h2>6. 不可以做的事</h2>
+<ul>
+<li>不可在 Wiki 寫沒有來源的事實；不可在簡報放 Wiki 裡沒有的內容。</li>
+<li>不可修改 <code>raw/</code>、不可刪除 <code>log.md</code> 的舊紀錄。</li>
+<li>不可為了通過檢查而刪掉檢查規則；要改規則先更新本文件並記 log。</li>
+</ul><p style="margin-top:48px;font-size:13px;color:var(--muted)">原始檔：<code>CLAUDE.md</code></p></main>
+<script type="module">
+if (document.querySelector('.mermaid')) {
+  const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  m.default.initialize({ startOnLoad: true, theme: 'neutral' });
+}
+</script>
+</body></html>
