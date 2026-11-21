@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一次實際執行的紀錄（2026-11-21） · HITL LLM Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f1e7;--ink:#1f2a2e;--muted:#5b6669;--line:#d9d0bf;--teal:#0f5257;--amber:#c8781b;--card:#fffdf8}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.8 "Noto Sans TC",system-ui,sans-serif}
+header{background:var(--teal);color:#fff;padding:12px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header a{color:#f5e3c8;text-decoration:none;font-size:15px} header b{font-family:"Noto Serif TC",serif;margin-right:auto}
+main{max-width:860px;margin:0 auto;padding:32px 22px 80px}
+h1,h2{font-family:"Noto Serif TC",serif;line-height:1.35} h1{font-size:30px} h2{font-size:23px;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px}
+a{color:var(--teal)} code{background:#ece5d6;padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:14px;line-height:1.5}
+pre code{background:none;padding:0} table{border-collapse:collapse;width:100%;font-size:15px;margin:1em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top} th{background:#ece5d6}
+blockquote{margin:1em 0;padding:8px 16px;background:#f5e3c8;border-left:4px solid var(--amber);border-radius:6px}
+.fm{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:18px}
+.mermaid{background:var(--card);text-align:center}
+</style></head><body>
+<header><b>HITL · LLM Wiki</b>
+<a href="../index.html">首頁</a><a href="../wiki/index.html">Wiki 索引</a>
+<a href="../slides/index.html">教學簡報</a><a href="../docs/workflow.html">Loop / Graph</a>
+<a href="../docs/run-log.html">執行紀錄</a><a href="../docs/reflection.html">反思</a></header>
+<main><h1>一次實際執行的紀錄（2026-11-21）</h1>
+<blockquote>
+<p>完整的時間序紀錄在 <a href="../wiki/log.html">wiki/log.md</a>；這裡整理成「每次檢查的結果」。
+所有輸出都是實際執行 <code>pipeline/</code> 腳本得到的原文。</p>
+</blockquote>
+<h2>總表</h2>
+<table>
+<thead>
+<tr>
+<th>次</th>
+<th>指令</th>
+<th>版本</th>
+<th>結果</th>
+<th>抓到什麼</th>
+<th>處理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>（搜尋資料時，人工／LLM）</td>
+<td>—</td>
+<td>⚠️</td>
+<td>EU AI Act 施行日期矛盾：業界文章寫 2026-08，修正案後為 2027-12-02</td>
+<td>Wiki 採修正後日期，加 ⚠️ 區塊</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>lint_wiki.py</code></td>
+<td>v1</td>
+<td>✓</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>check_slides.py</code></td>
+<td>v1</td>
+<td>✗ 3 張</td>
+<td>只偵測到 12 / 13 張（<strong>檢查器 bug</strong>：封面 class 沒比對到）</td>
+<td>修正正規式 → v1.1</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>check_slides.py</code></td>
+<td>v1.1</td>
+<td>✗ 4 張</td>
+<td>第 1、5、11、13 張的數字不在 Wiki</td>
+<td>分析根源（見下）</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>lint_wiki.py</code></td>
+<td><strong>v2</strong></td>
+<td>✗ 3 個</td>
+<td>3 行含數字卻沒有 [S#]，包括第 11 張的根源</td>
+<td>修 Wiki</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>lint_wiki.py</code></td>
+<td>v2</td>
+<td>✗ 1 個</td>
+<td>「（綜合：單位換算）」標記不被 lint 接受</td>
+<td>lint 接受「（綜合」開頭</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>lint_wiki.py</code> + <code>check_slides.py</code></td>
+<td>v2 / v1.1</td>
+<td>✓ ✓</td>
+<td>18 頁、8 份來源；13 張皆可追溯</td>
+<td>—</td>
+</tr>
+<tr>
+<td>7</td>
+<td>👤 視覺檢查（13 張截圖）</td>
+<td>—</td>
+<td>✗ → ✓</td>
+<td><code>.grid</code> 撐滿高度讓文字掉到底部；說明文字蓋住來源頁腳</td>
+<td>改 CSS 後重新截圖</td>
+</tr>
+</tbody>
+</table>
+<h2>第 3 次執行的原始輸出</h2>
+<pre><code>✗ 第 1 張：數字 15 不在引用的 Wiki 頁面中（overview.md）
+✗ 第 5 張：數字 13 不在引用的 Wiki 頁面中（concepts/rlhf.md）
+✗ 第 5 張：數字 1750 不在引用的 Wiki 頁面中（concepts/rlhf.md）
+✗ 第 11 張：數字 12 不在引用的 Wiki 頁面中（concepts/when-to-review.md）
+✗ 第 11 張：數字 40 不在引用的 Wiki 頁面中（concepts/when-to-review.md）
+✗ 第 13 張：數字 2010 不在引用的 Wiki 頁面中（overview.md index.md）
+…（2015、2019、2022、2023、2024 同上）
+簡報檢查失敗：4 / 13 張需要重新生成 → [1, 5, 11, 13]
+</code></pre>
+<h3>根源分析</h3>
+<table>
+<thead>
+<tr>
+<th>張</th>
+<th>表面問題</th>
+<th>根源節點</th>
+<th>修在哪裡</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>「約 15 分鐘」不是 Wiki 內容</td>
+<td>生成</td>
+<td>重新生成投影片</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1.3B 被換算成「13 億」</td>
+<td>生成（自行換算）</td>
+<td>Wiki 加換算行，標（綜合：單位換算）</td>
+</tr>
+<tr>
+<td>11</td>
+<td>「40 次、12 小時」不在 concept 頁</td>
+<td><strong>Wiki 整理</strong>：只搬結果、漏了條件，且該行沒有 [S8]</td>
+<td>修 concept 頁</td>
+</tr>
+<tr>
+<td>13</td>
+<td>參考資料年份不在 index</td>
+<td><strong>Wiki 整理</strong>：index 沒有作者／年份</td>
+<td>修 index</td>
+</tr>
+</tbody>
+</table>
+<p>→ 4 個失敗中有 2 個的根源在「Wiki 整理」，卻要到「簡報檢查」才被發現。</p>
+<h2>第 4 次執行（把檢查往前移之後）的原始輸出</h2>
+<pre><code>✗ overview.md:9 含數字 ['18'] 但這一行沒有 [S#]
+✗ concepts/when-to-review.md:10 含數字 ['27', '31'] 但這一行沒有 [S#]
+✗ concepts/human-oversight-law.md:18 含數字 ['2026'] 但這一行沒有 [S#]
+lint 失敗：3 個錯誤
+</code></pre>
+<h2>最終狀態</h2>
+<pre><code>$ python3 pipeline/lint_wiki.py
+✓ lint 通過：18 頁、8 份來源
+$ python3 pipeline/check_slides.py
+✓ 簡報檢查通過：13 張投影片，皆可追溯到 Wiki
+</code></pre><p style="margin-top:48px;font-size:13px;color:var(--muted)">原始檔：<code>docs/run-log.md</code></p></main>
+<script type="module">
+if (document.querySelector('.mermaid')) {
+  const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  m.default.initialize({ startOnLoad: true, theme: 'neutral' });
+}
+</script>
+</body></html>

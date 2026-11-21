@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 這麼強，還需要人嗎？｜Human-in-the-loop AI 入門</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6f1e7; --ink: #1f2a2e; --muted: #5b6669; --line: #d9d0bf;
+    --teal: #0f5257; --teal-soft: #d7e7e4; --amber: #c8781b; --amber-soft: #f5e3c8;
+    --red: #b4432f; --card: #fffdf8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #2a2f31; overflow: hidden; }
+  body { font-family: "Noto Sans TC", system-ui, sans-serif; color: var(--ink); }
+
+  /* 16:9 舞台，依視窗縮放 */
+  .stage { position: absolute; width: 1280px; height: 720px; left: 50%; top: 50%; transform-origin: center; }
+  .slide {
+    position: absolute; inset: 0; background: var(--paper); padding: 64px 84px 70px;
+    display: none; flex-direction: column; justify-content: center; overflow: hidden;
+  }
+  .slide.active { display: flex; animation: in .35s ease; }
+  @keyframes in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .slide::before { /* 左上角章節標籤 */
+    content: attr(data-part); position: absolute; top: 28px; left: 84px;
+    font-size: 15px; letter-spacing: .12em; color: var(--amber); font-weight: 700;
+  }
+
+  h1 { font-family: "Noto Serif TC", serif; font-size: 64px; line-height: 1.2; font-weight: 900; }
+  h2 { font-family: "Noto Serif TC", serif; font-size: 44px; line-height: 1.25; margin-bottom: 30px; }
+  h2 .en { font-family: "Noto Sans TC", sans-serif; font-size: 22px; color: var(--muted); font-weight: 500; margin-left: 10px; }
+  p, li { font-size: 27px; line-height: 1.6; }
+  .lead { font-size: 30px; color: var(--muted); }
+  b, strong { color: var(--teal); }
+  .hl { background: linear-gradient(transparent 60%, var(--amber-soft) 60%); }
+  ul { padding-left: 1.1em; } li { margin-bottom: 10px; }
+
+  .grid { display: grid; gap: 22px; align-content: start; }
+  .g2 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 24px 26px; }
+  .card h3 { font-size: 26px; margin-bottom: 8px; color: var(--teal); }
+  .card p { font-size: 24px; color: var(--muted); line-height: 1.5; }
+  .card.warn { border-color: var(--red); } .card.warn h3 { color: var(--red); }
+  .card.good { border-color: var(--teal); background: var(--teal-soft); }
+  .num { font-size: 64px; font-weight: 900; color: var(--amber); line-height: 1; margin-bottom: 8px; font-family: "Noto Serif TC", serif; }
+  .step { display: flex; gap: 18px; align-items: center; }
+  .step .n { flex: none; width: 54px; height: 54px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; font-size: 26px; font-weight: 700; }
+  .arrow { text-align: center; font-size: 30px; color: var(--amber); }
+  .big-q { font-size: 34px; line-height: 1.5; margin-bottom: 26px; }
+  .tag { display: inline-block; font-size: 18px; padding: 3px 12px; border-radius: 999px; background: var(--amber-soft); color: var(--amber); font-weight: 700; margin-bottom: 14px; }
+
+  /* 互動小測驗 */
+  .quiz { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .quiz button {
+    font: inherit; font-size: 24px; padding: 22px 18px; border-radius: 16px; cursor: pointer; text-align: left;
+    border: 2px solid var(--line); background: var(--card); color: var(--ink); transition: .2s;
+  }
+  .quiz button:hover { border-color: var(--teal); }
+  .quiz button.right { border-color: var(--teal); background: var(--teal-soft); }
+  .quiz button.wrong { border-color: var(--red); opacity: .6; }
+  .reveal-box { margin-top: 26px; padding: 20px 24px; border-radius: 16px; background: var(--card); border-left: 6px solid var(--teal); opacity: 0; transition: .3s; }
+  .reveal-box.show { opacity: 1; }
+
+  /* 來源頁腳：每張都要有，連回 Wiki */
+  footer.src {
+    position: absolute; left: 84px; right: 84px; bottom: 26px; font-size: 15px; color: var(--muted);
+    border-top: 1px solid var(--line); padding-top: 10px; display: flex; gap: 14px; flex-wrap: wrap;
+  }
+  footer.src a { color: var(--teal); text-decoration: none; }
+  footer.src a:hover { text-decoration: underline; }
+
+  /* 講者備註（按 N 顯示） */
+  aside.notes { display: none; }
+  body.show-notes .slide.active aside.notes {
+    display: block; position: absolute; right: 24px; top: 24px; width: 380px; max-height: 600px; overflow: auto;
+    background: #1f2a2e; color: #f6f1e7; font-size: 17px; line-height: 1.6; padding: 18px 20px; border-radius: 12px; z-index: 5;
+  }
+
+  /* 封面 */
+  .cover { background: var(--teal); color: var(--paper); justify-content: center; }
+  .cover::before { color: var(--amber-soft); }
+  .cover h1 { color: #fff; } .cover .lead { color: var(--teal-soft); margin-top: 22px; }
+  .cover footer.src { color: var(--teal-soft); border-color: #3c7377; } .cover footer.src a { color: var(--amber-soft); }
+  .cover .meta { margin-top: 48px; font-size: 22px; color: var(--teal-soft); }
+
+  /* 控制列 */
+  .hud { position: fixed; left: 0; right: 0; bottom: 0; height: 4px; background: #444; z-index: 10; }
+  .hud .bar { height: 100%; background: var(--amber); transition: width .3s; }
+  .counter { position: fixed; right: 16px; bottom: 12px; color: #aaa; font-size: 14px; z-index: 10; }
+  .help { position: fixed; right: 16px; top: 10px; color: #888; font-size: 13px; z-index: 10; }
+  .nav-btn { position: fixed; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.08); color: #ddd; border: 0; width: 44px; height: 70px; font-size: 26px; cursor: pointer; z-index: 10; border-radius: 8px; }
+  .nav-btn:hover { background: rgba(255,255,255,.2); }
+  #prev { left: 8px; } #next { right: 8px; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+<!-- 1 ─────────────── 引起動機 -->
+<section class="slide cover" data-part="HUMAN-IN-THE-LOOP AI 入門" data-wiki="overview.md">
+  <h1>AI 這麼強，<br>還需要人嗎？</h1>
+  <p class="lead">Human-in-the-loop AI：人在 AI 的哪裡、為什麼、怎麼參與</p>
+  <p class="meta">給「會用 ChatGPT，但不知道它怎麼運作」的你</p>
+  <aside class="notes">開場問大家：你上次完全照抄 AI 的答案是什麼時候？今天的答案不是「要」或「不要」，而是「人要放在對的位置」。</aside>
+  <footer class="src">內容來源：<a href="../wiki/overview.html">Wiki 總覽</a> · S1–S8</footer>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-part="01 · 引起動機" data-wiki="concepts/rlhf.md">
+  <h2>你其實已經在迴圈裡了</h2>
+  <div class="grid g2">
+    <div class="card"><h3>👍 👎</h3><p>在 ChatGPT 按下讚或倒讚，就是在給 AI「人類回饋」。</p></div>
+    <div class="card"><h3>這件事有多重要？</h3><p>ChatGPT 的前身，正是靠<strong>人類替答案排名</strong>訓練出來的。</p></div>
+  </div>
+  <p class="lead" style="margin-top:30px">→ 人不只是「使用者」，也是 AI 的<span class="hl">老師與檢查者</span>。</p>
+  <aside class="notes">注意：👍👎 是概念類比（Wiki 標為綜合），不要說 OpenAI 一定用這些按鈕來訓練。重點是讓聽眾意識到「人類回饋」這件事。</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/rlhf.html">Wiki · RLHF</a> · S2（👍👎 為概念類比）</footer>
+</section>
+
+<!-- 3 ─────────────── 定義 -->
+<section class="slide" data-part="02 · 定義" data-wiki="concepts/human-in-the-loop.md">
+  <h2>Human-in-the-loop 是什麼？<span class="en">HITL</span></h2>
+  <p class="big-q">讓人<strong>持續參與</strong> AI 的建立與運作，而不是「做完就放手」。</p>
+  <div class="grid g3">
+    <div class="card"><span class="tag">AI 主導</span><h3>主動學習</h3><p>AI 挑出自己最沒把握的資料，請人標註</p></div>
+    <div class="card"><span class="tag">人機來回</span><h3>互動式學習</h3><p>人一邊修正，模型一邊更新</p></div>
+    <div class="card"><span class="tag">專家主導</span><h3>機器教學</h3><p>專家決定要教 AI 什麼</p></div>
+  </div>
+  <aside class="notes">分類軸是「誰掌控學習過程」。可以問：你覺得 ChatGPT 的訓練比較像哪一種？（答案：介於互動式與機器教學之間，沒有標準答案，帶出下一張。）</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/human-in-the-loop.html">Wiki · HITL 是什麼</a> · S1</footer>
+</section>
+
+<!-- 4 ─────────────── 機制 -->
+<section class="slide" data-part="03 · 機制" data-wiki="concepts/rlhf.md">
+  <h2>ChatGPT 是怎麼被「教」出來的？<span class="en">RLHF</span></h2>
+  <div class="grid" style="gap:14px">
+    <div class="step"><span class="n">1</span><p><b>示範</b>：人寫出好答案，讓模型模仿</p></div>
+    <div class="arrow">↓</div>
+    <div class="step"><span class="n">2</span><p><b>排名</b>：模型寫好幾個答案，人替它們排名 → 訓練出「評分老師」</p></div>
+    <div class="arrow">↓</div>
+    <div class="step"><span class="n">3</span><p><b>強化學習</b>：讓模型往評分老師打高分的方向調整</p></div>
+  </div>
+  <aside class="notes">為什麼不用自動指標？因為「好答案」本來就主觀。原本的模型只學「預測下一個字」，不等於「幫你把事做好」。</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/rlhf.html">Wiki · RLHF</a> · S2</footer>
+</section>
+
+<!-- 5 ─────────────── 互動 -->
+<section class="slide" data-part="03 · 機制 · 小測驗" data-wiki="concepts/rlhf.md">
+  <h2>🤔 小測驗</h2>
+  <p class="big-q">研究中，<b>13 億</b>參數的小模型，答案竟然比 <b>1750 億</b>參數的大模型更受人喜歡。為什麼？</p>
+  <div class="quiz" id="quiz">
+    <button data-ok="0">A. 小模型讀了更多資料</button>
+    <button data-ok="1">B. 小模型有經過人類回饋訓練</button>
+    <button data-ok="0">C. 評審比較喜歡短答案</button>
+  </div>
+  <div class="reveal-box" id="quizAns"><p>✅ <b>B</b>。小了 100 倍，靠的是人類回饋（RLHF）。<br>但它<strong>仍會犯簡單錯誤</strong> → 人還是要檢查。</p></div>
+  <aside class="notes">讓大家先舉手投票再點答案。1.3B = 13 億；175B = 1750 億。</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/rlhf.html">Wiki · RLHF</a> · S2</footer>
+</section>
+
+<!-- 6 ─────────────── 陷阱 -->
+<section class="slide" data-part="04 · 陷阱" data-wiki="concepts/automation-bias.md">
+  <h2>陷阱：自動化偏誤<span class="en">Automation bias</span></h2>
+  <p class="big-q">人會<strong>過度相信</strong>機器的建議。</p>
+  <div class="grid g2">
+    <div class="card warn"><h3>疏漏錯誤</h3><p>AI 沒提醒，人也就沒發現問題</p></div>
+    <div class="card warn"><h3>執行錯誤</h3><p>AI 給錯建議，人照做</p></div>
+  </div>
+  <p class="lead" style="margin-top:26px">⚠️ 新手、專家都會；而且<span class="hl">光靠訓練擋不住</span>。</p>
+  <aside class="notes">所以「有人在迴圈裡」不等於安全。如果人只是蓋章，HITL 就只是形式。</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/automation-bias.html">Wiki · 自動化偏誤</a> · S4</footer>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-part="04 · 陷阱" data-wiki="concepts/automation-bias.md">
+  <h2>「錯的建議」比「沒有建議」更危險</h2>
+  <div class="grid g2">
+    <div class="card"><h3>AI 沒給建議</h3><p>人會變慢、正確率小幅下降</p></div>
+    <div class="card warn"><h3>AI 給了錯的建議</h3><p>正確率<strong>大幅</strong>下降——人照著錯的走</p></div>
+  </div>
+  <div class="card good" style="margin-top:26px"><h3>💡 所以 AI 該怎麼做？</h3><p>沒把握的時候，要<b>主動說自己沒把握</b>，人才知道該多看一眼。</p></div>
+  <aside class="notes">這是實驗結果：讓受試者先習慣一個總是正確的輔助系統，再突然讓它「消失」或「給錯」。</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/automation-bias.html">Wiki · 自動化偏誤</a> · S5</footer>
+</section>
+
+<!-- 8 ─────────────── 怎麼做好 -->
+<section class="slide" data-part="05 · 怎麼做好" data-wiki="concepts/design-guidelines.md">
+  <h2>好的設計：看得懂、關得掉、改得動</h2>
+  <p class="lead" style="margin-bottom:22px">微軟 18 條人機互動準則中，和「人介入」最相關的：</p>
+  <div class="grid g3">
+    <div class="card"><h3>看得懂</h3><p>說明它做得多好（G2）<br>解釋為什麼（G11）</p></div>
+    <div class="card"><h3>關得掉</h3><p>容易跳過（G8）<br>沒把握就少做（G10）</p></div>
+    <div class="card"><h3>改得動</h3><p>容易修正錯誤（G9）<br>細緻收集回饋（G15）</p></div>
+  </div>
+  <aside class="notes">可以請聽眾拿手機上的任一 AI 功能對照：它有告訴你它多準嗎？你能一鍵關掉嗎？</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/design-guidelines.html">Wiki · 設計準則</a> · S3</footer>
+</section>
+
+<!-- 9 ─────────────── 規範 -->
+<section class="slide" data-part="06 · 規範" data-wiki="concepts/human-oversight-law.md">
+  <h2>法律怎麼要求？<span class="en">EU AI Act 第 14 條</span></h2>
+  <p class="lead" style="margin-bottom:20px">高風險 AI 的監督者，必須做得到：</p>
+  <div class="grid g3" style="grid-template-columns:repeat(5,1fr);gap:14px">
+    <div class="card"><h3>理解</h3><p>知道限制、發現異常</p></div>
+    <div class="card"><h3>警覺</h3><p>察覺自動化偏誤</p></div>
+    <div class="card"><h3>解讀</h3><p>正確看懂輸出</p></div>
+    <div class="card"><h3>推翻</h3><p>可以不採用</p></div>
+    <div class="card"><h3>停止</h3><p>按下停止鍵</p></div>
+  </div>
+  <p class="lead" style="margin-top:24px">📅 修正後施行：<b>2027 年 12 月 2 日</b>（嵌入產品者 2028 年 8 月 2 日）</p>
+  <aside class="notes">注意日期：網路上很多文章寫 2026 年 8 月，那是修正前的版本（Wiki 中已標記此矛盾）。</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/human-oversight-law.html">Wiki · 法律中的人類監督</a> · S6</footer>
+</section>
+
+<!-- 10 ─────────────── 新趨勢 -->
+<section class="slide" data-part="07 · 新趨勢" data-wiki="concepts/agent-checkpoints.md">
+  <h2>AI Agent 時代：人在哪裡按暫停？</h2>
+  <p class="lead" style="margin-bottom:22px">Agent 會自己規劃、自己用工具、連續做好幾步。</p>
+  <div class="grid g3">
+    <div class="card"><div class="num">①</div><h3>開頭對齊</h3><p>先跟人確認任務，再開始做</p></div>
+    <div class="card"><div class="num">②</div><h3>檢查點</h3><p>關鍵步驟或卡住時，停下來等人</p></div>
+    <div class="card"><div class="num">③</div><h3>停止條件</h3><p>例如最多試幾次，避免無限循環</p></div>
+  </div>
+  <aside class="notes">連結到這份作業本身：做這份簡報的流程也有檢查點（大綱先給人確認、最後人工檢視）。</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/agent-checkpoints.html">Wiki · Agent 檢查點</a> · S7</footer>
+</section>
+
+<!-- 11 ─────────────── 案例 -->
+<section class="slide" data-part="08 · 案例" data-wiki="concepts/when-to-review.md">
+  <h2>案例：急診室的 AI 分流</h2>
+  <p class="lead" style="margin-bottom:18px">AI 替病人評估嚴重度——哪些病人要先讓醫護人員複查？</p>
+  <div class="grid g2">
+    <div class="card"><h3>做法：動態門檻</h3><p>AI 越沒把握、越接近危急邊界 → 越要複查。<br>人力空閒時多查，忙時只查最可疑的。</p></div>
+    <div class="card good"><h3>結果（40 次模擬、每次 12 小時）</h3><p>安全性和保守做法相當，<br>複查人力少約 <b>31%</b>，等待少約 <b>27%</b>。</p></div>
+  </div>
+  <p style="font-size:20px;color:var(--muted);margin-top:18px">＊合成資料的模擬研究，尚需真實資料驗證。</p>
+  <aside class="notes">這是我自己的專案。重點不是數字，而是「人的注意力有限，要分配，不要平均撒」。</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/when-to-review.html">Wiki · 什麼時候該檢查</a> · S8</footer>
+</section>
+
+<!-- 12 ─────────────── 帶走的習慣 -->
+<section class="slide" data-part="09 · 帶走的習慣" data-wiki="concepts/when-to-review.md concepts/automation-bias.md">
+  <h2>下次用 AI，帶走 3 個習慣</h2>
+  <div class="grid g3">
+    <div class="card"><div class="num">1</div><h3>看信心</h3><p>AI 說「不確定」時，一定要自己查證</p></div>
+    <div class="card"><div class="num">2</div><h3>看後果</h3><p>錯了會出大事的（健康、法律、金錢），一定要檢查</p></div>
+    <div class="card"><div class="num">3</div><h3>別只蓋章</h3><p>記得自己也會過度相信它——留時間真的看過</p></div>
+  </div>
+  <aside class="notes">把案例的三原則（看信心、看後果、看人力）翻成個人版本。第 3 點對應自動化偏誤。</aside>
+  <footer class="src">來源：<a href="../wiki/concepts/when-to-review.html">Wiki · 什麼時候該檢查</a>、<a href="../wiki/concepts/automation-bias.html">自動化偏誤</a> · S8 S4</footer>
+</section>
+
+<!-- 13 ─────────────── 總結 -->
+<section class="slide" data-part="10 · 總結" data-wiki="overview.md index.md">
+  <h2>總結：人要放在對的位置</h2>
+  <ul>
+    <li><b>訓練時</b>：人的回饋讓 AI 更懂人（RLHF）</li>
+    <li><b>使用時</b>：有人在 ≠ 安全，要防自動化偏誤</li>
+    <li><b>AI 自己做事時</b>：設計檢查點與停止條件</li>
+  </ul>
+  <p style="font-size:19px;color:var(--muted);margin-top:22px;line-height:1.7">
+    參考資料：S1 Mosqueira-Rey et al. (2023) · S2 Ouyang et al. (2022) · S3 Amershi et al. (2019) ·
+    S4 Parasuraman &amp; Manzey (2010) · S5 Wickens et al. (2015) · S6 EU AI Act Art. 14 ·
+    S7 Anthropic (2024) · S8 陳宥錡，急診分流模擬
+  </p>
+  <aside class="notes">完整內容與每個說法的出處，都在 LLM Wiki 裡可以追溯。</aside>
+  <footer class="src">來源：<a href="../wiki/overview.html">Wiki 總覽</a> · <a href="../wiki/index.html">Wiki 索引</a> · S1–S8</footer>
+</section>
+
+</div>
+
+<div class="hud"><div class="bar" id="bar"></div></div>
+<div class="counter" id="counter"></div>
+<div class="help">← → 換頁 · N 講者備註 · F 全螢幕</div>
+<button class="nav-btn" id="prev" aria-label="上一張">‹</button>
+<button class="nav-btn" id="next" aria-label="下一張">›</button>
+
+<script>
+const slides = [...document.querySelectorAll(".slide")];
+let cur = 0;
+function fit() {
+  const s = Math.min(innerWidth / 1280, innerHeight / 720);
+  document.getElementById("stage").style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+function show(i) {
+  cur = Math.max(0, Math.min(slides.length - 1, i));
+  slides.forEach((s, k) => s.classList.toggle("active", k === cur));
+  document.getElementById("bar").style.width = ((cur + 1) / slides.length * 100) + "%";
+  document.getElementById("counter").textContent = `${cur + 1} / ${slides.length}`;
+  history.replaceState(null, "", "#" + (cur + 1));
+}
+addEventListener("resize", fit);
+addEventListener("keydown", e => {
+  if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); show(cur + 1); }
+  if (["ArrowLeft", "PageUp"].includes(e.key)) show(cur - 1);
+  if (e.key === "Home") show(0);
+  if (e.key === "End") show(slides.length - 1);
+  if (e.key.toLowerCase() === "n") document.body.classList.toggle("show-notes");
+  if (e.key.toLowerCase() === "f") document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.();
+});
+document.getElementById("prev").onclick = () => show(cur - 1);
+document.getElementById("next").onclick = () => show(cur + 1);
+let tx = null;
+addEventListener("touchstart", e => tx = e.touches[0].clientX);
+addEventListener("touchend", e => { if (tx === null) return; const d = e.changedTouches[0].clientX - tx; if (Math.abs(d) > 50) show(cur + (d < 0 ? 1 : -1)); tx = null; });
+
+document.getElementById("quiz").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  document.querySelectorAll("#quiz button").forEach(x => x.classList.add(x.dataset.ok === "1" ? "right" : "wrong"));
+  document.getElementById("quizAns").classList.add("show");
+});
+
+fit(); show((parseInt(location.hash.slice(1)) || 1) - 1);
+</script>
+</body>
+</html>

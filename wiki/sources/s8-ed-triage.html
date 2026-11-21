@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S8 · 急診 AI 分流模擬（本人專案） · HITL LLM Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f1e7;--ink:#1f2a2e;--muted:#5b6669;--line:#d9d0bf;--teal:#0f5257;--amber:#c8781b;--card:#fffdf8}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.8 "Noto Sans TC",system-ui,sans-serif}
+header{background:var(--teal);color:#fff;padding:12px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header a{color:#f5e3c8;text-decoration:none;font-size:15px} header b{font-family:"Noto Serif TC",serif;margin-right:auto}
+main{max-width:860px;margin:0 auto;padding:32px 22px 80px}
+h1,h2{font-family:"Noto Serif TC",serif;line-height:1.35} h1{font-size:30px} h2{font-size:23px;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px}
+a{color:var(--teal)} code{background:#ece5d6;padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:14px;line-height:1.5}
+pre code{background:none;padding:0} table{border-collapse:collapse;width:100%;font-size:15px;margin:1em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top} th{background:#ece5d6}
+blockquote{margin:1em 0;padding:8px 16px;background:#f5e3c8;border-left:4px solid var(--amber);border-radius:6px}
+.fm{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:18px}
+.mermaid{background:var(--card);text-align:center}
+</style></head><body>
+<header><b>HITL · LLM Wiki</b>
+<a href="../../index.html">首頁</a><a href="../../wiki/index.html">Wiki 索引</a>
+<a href="../../slides/index.html">教學簡報</a><a href="../../docs/workflow.html">Loop / Graph</a>
+<a href="../../docs/run-log.html">執行紀錄</a><a href="../../docs/reflection.html">反思</a></header>
+<main><div class="fm">title: S8 · 急診 AI 分流模擬（本人專案） · type: source · sources: [S8] · updated: 2026-11-21</div><h1>S8 · AI-Assisted Emergency Department Triage Simulation</h1>
+<p><strong>一句話</strong>：AI 幫急診病人評分時，「什麼時候讓人複查」可以用模擬來設計，答案是：看信心值，也看人力忙不忙。 [S8]</p>
+<ul>
+<li>出處：陳宥錡，GitHub repo（合成資料）。原始卡片：<code>raw/s8-ed-triage.md</code></li>
+<li>類型：作業研究模擬</li>
+</ul>
+<h2>重點</h2>
+<ul>
+<li>取捨：複查越多越安全，但會吃掉治療病人的人力。 [S8]</li>
+<li>4 種政策：不複查、全部複查、固定門檻、動態門檻。 [S8]</li>
+<li>風險分數 =（1 − 信心值）× 邊界權重，越接近危急邊界、AI 越沒把握，越該複查。 [S8]</li>
+<li>動態門檻：安全性與保守門檻相當，複查人力少約 31%、病人等待少約 27%（40 次模擬、每次 12 小時）。 [S8]</li>
+<li>限制：資料是合成的。 [S8]</li>
+</ul>
+<h2>用在哪些頁面</h2>
+<ul>
+<li><a href="../concepts/when-to-review.html">什麼時候該讓人檢查 AI？</a></li>
+</ul><p style="margin-top:48px;font-size:13px;color:var(--muted)">原始檔：<code>wiki/sources/s8-ed-triage.md</code></p></main>
+<script type="module">
+if (document.querySelector('.mermaid')) {
+  const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  m.default.initialize({ startOnLoad: true, theme: 'neutral' });
+}
+</script>
+</body></html>

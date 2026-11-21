@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S2 · InstructGPT 與 RLHF（Ouyang et al.） · HITL LLM Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f1e7;--ink:#1f2a2e;--muted:#5b6669;--line:#d9d0bf;--teal:#0f5257;--amber:#c8781b;--card:#fffdf8}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.8 "Noto Sans TC",system-ui,sans-serif}
+header{background:var(--teal);color:#fff;padding:12px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header a{color:#f5e3c8;text-decoration:none;font-size:15px} header b{font-family:"Noto Serif TC",serif;margin-right:auto}
+main{max-width:860px;margin:0 auto;padding:32px 22px 80px}
+h1,h2{font-family:"Noto Serif TC",serif;line-height:1.35} h1{font-size:30px} h2{font-size:23px;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px}
+a{color:var(--teal)} code{background:#ece5d6;padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:14px;line-height:1.5}
+pre code{background:none;padding:0} table{border-collapse:collapse;width:100%;font-size:15px;margin:1em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top} th{background:#ece5d6}
+blockquote{margin:1em 0;padding:8px 16px;background:#f5e3c8;border-left:4px solid var(--amber);border-radius:6px}
+.fm{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:18px}
+.mermaid{background:var(--card);text-align:center}
+</style></head><body>
+<header><b>HITL · LLM Wiki</b>
+<a href="../../index.html">首頁</a><a href="../../wiki/index.html">Wiki 索引</a>
+<a href="../../slides/index.html">教學簡報</a><a href="../../docs/workflow.html">Loop / Graph</a>
+<a href="../../docs/run-log.html">執行紀錄</a><a href="../../docs/reflection.html">反思</a></header>
+<main><div class="fm">title: S2 · InstructGPT 與 RLHF（Ouyang et al.） · type: source · sources: [S2] · updated: 2026-11-21</div><h1>S2 · Training language models to follow instructions with human feedback</h1>
+<p><strong>一句話</strong>：ChatGPT 的前身之所以「聽得懂人話」，關鍵是讓<strong>人類替答案排名</strong>，再用這些排名訓練模型。 [S2]</p>
+<ul>
+<li>出處：Ouyang et al., NeurIPS 2022（arXiv:2203.02155）；OpenAI 部落格 2022-01-27。原始卡片：<code>raw/s2-instructgpt.md</code></li>
+<li>類型：學術論文 + 官方說明</li>
+</ul>
+<h2>重點</h2>
+<ul>
+<li>模型變大不等於更符合使用者意圖；GPT-3 的訓練目標是預測下一個字，不是幫助使用者。 [S2]</li>
+<li>RLHF 三步驟：人寫示範 → 人替輸出排名、訓練獎勵模型 → 用獎勵模型做強化學習。 [S2]</li>
+<li>1.3B 參數的 InstructGPT 在人類評估中勝過 175B 的 GPT-3，參數少 100 倍。 [S2]</li>
+<li>較少編造事實、毒性略降，但仍會犯簡單錯誤。 [S2]</li>
+<li>選人類偏好當獎勵，是因為「好不好、安不安全」很主觀，難用自動指標衡量。 [S2]</li>
+</ul>
+<h2>用在哪些頁面</h2>
+<ul>
+<li><a href="../concepts/rlhf.html">RLHF</a></li>
+<li><a href="../concepts/human-in-the-loop.html">Human-in-the-loop 是什麼</a></li>
+</ul><p style="margin-top:48px;font-size:13px;color:var(--muted)">原始檔：<code>wiki/sources/s2-instructgpt.md</code></p></main>
+<script type="module">
+if (document.querySelector('.mermaid')) {
+  const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  m.default.initialize({ startOnLoad: true, theme: 'neutral' });
+}
+</script>
+</body></html>

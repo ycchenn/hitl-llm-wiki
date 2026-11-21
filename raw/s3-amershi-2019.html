@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S3 · Guidelines for Human-AI Interaction · HITL LLM Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f1e7;--ink:#1f2a2e;--muted:#5b6669;--line:#d9d0bf;--teal:#0f5257;--amber:#c8781b;--card:#fffdf8}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.8 "Noto Sans TC",system-ui,sans-serif}
+header{background:var(--teal);color:#fff;padding:12px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header a{color:#f5e3c8;text-decoration:none;font-size:15px} header b{font-family:"Noto Serif TC",serif;margin-right:auto}
+main{max-width:860px;margin:0 auto;padding:32px 22px 80px}
+h1,h2{font-family:"Noto Serif TC",serif;line-height:1.35} h1{font-size:30px} h2{font-size:23px;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px}
+a{color:var(--teal)} code{background:#ece5d6;padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:14px;line-height:1.5}
+pre code{background:none;padding:0} table{border-collapse:collapse;width:100%;font-size:15px;margin:1em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top} th{background:#ece5d6}
+blockquote{margin:1em 0;padding:8px 16px;background:#f5e3c8;border-left:4px solid var(--amber);border-radius:6px}
+.fm{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:18px}
+.mermaid{background:var(--card);text-align:center}
+</style></head><body>
+<header><b>HITL · LLM Wiki</b>
+<a href="../index.html">首頁</a><a href="../wiki/index.html">Wiki 索引</a>
+<a href="../slides/index.html">教學簡報</a><a href="../docs/workflow.html">Loop / Graph</a>
+<a href="../docs/run-log.html">執行紀錄</a><a href="../docs/reflection.html">反思</a></header>
+<main><h1>S3 · Guidelines for Human-AI Interaction</h1>
+<ul>
+<li><strong>作者</strong>：Saleema Amershi, Dan Weld, Mihaela Vorvoreanu 等 13 人（Microsoft）</li>
+<li><strong>出處</strong>：CHI 2019（Honorable Mention）；DOI 10.1145/3290605.3300233</li>
+<li><strong>網址</strong>：https://www.microsoft.com/en-us/research/publication/guidelines-for-human-ai-interaction/</li>
+<li><strong>類型</strong>：學術論文（HCI）+ 微軟說明文</li>
+<li><strong>取得日期</strong>：2026-11-21</li>
+</ul>
+<h2>閱讀筆記（萃取，非原文）</h2>
+<ul>
+<li>從超過 150 條 AI 設計建議中整理出 18 條準則；經 49 位設計實務者拿 20 個熱門 AI 產品測試驗證。</li>
+<li>依「使用的時間點」分四組：</li>
+<li><strong>一開始（Initially）</strong>：G1 說明系統能做什麼；G2 說明它做得多好。</li>
+<li><strong>互動中（During interaction）</strong>：G3 依情境決定時機；G4 顯示與當下相關的資訊；G5 符合社會規範；G6 減少社會偏見。</li>
+<li><strong>出錯時（When wrong）</strong>：G7 容易叫出來；G8 容易關掉；G9 容易修正錯誤；G10 不確定時縮小服務範圍；G11 解釋為什麼這樣做。</li>
+<li><strong>長期（Over time）</strong>：G12 記得最近互動；G13 從使用者行為學習；G14 謹慎更新；G15 細緻地收集回饋；G16 顯示使用者操作的後果；G17 提供全域控制；G18 變更時通知使用者。</li>
+<li>作者提醒：準則之間常需取捨；且是在圖形介面產品上發展與測試的。</li>
+</ul><p style="margin-top:48px;font-size:13px;color:var(--muted)">原始檔：<code>raw/s3-amershi-2019.md</code></p></main>
+<script type="module">
+if (document.querySelector('.mermaid')) {
+  const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  m.default.initialize({ startOnLoad: true, theme: 'neutral' });
+}
+</script>
+</body></html>

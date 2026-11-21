@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>反思 · HITL LLM Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f1e7;--ink:#1f2a2e;--muted:#5b6669;--line:#d9d0bf;--teal:#0f5257;--amber:#c8781b;--card:#fffdf8}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.8 "Noto Sans TC",system-ui,sans-serif}
+header{background:var(--teal);color:#fff;padding:12px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header a{color:#f5e3c8;text-decoration:none;font-size:15px} header b{font-family:"Noto Serif TC",serif;margin-right:auto}
+main{max-width:860px;margin:0 auto;padding:32px 22px 80px}
+h1,h2{font-family:"Noto Serif TC",serif;line-height:1.35} h1{font-size:30px} h2{font-size:23px;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px}
+a{color:var(--teal)} code{background:#ece5d6;padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:14px;line-height:1.5}
+pre code{background:none;padding:0} table{border-collapse:collapse;width:100%;font-size:15px;margin:1em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top} th{background:#ece5d6}
+blockquote{margin:1em 0;padding:8px 16px;background:#f5e3c8;border-left:4px solid var(--amber);border-radius:6px}
+.fm{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:18px}
+.mermaid{background:var(--card);text-align:center}
+</style></head><body>
+<header><b>HITL · LLM Wiki</b>
+<a href="../index.html">首頁</a><a href="../wiki/index.html">Wiki 索引</a>
+<a href="../slides/index.html">教學簡報</a><a href="../docs/workflow.html">Loop / Graph</a>
+<a href="../docs/run-log.html">執行紀錄</a><a href="../docs/reflection.html">反思</a></header>
+<main><h1>反思</h1>
+<blockquote>
+<p>根據 <a href="run-log.html">實際執行紀錄</a> 回答。</p>
+</blockquote>
+<h2>1. 哪一個節點最常出錯？</h2>
+<p><strong>「生成投影片」節點的失敗最多</strong>（第一次完整檢查 13 張中有 4 張不通過），但<strong>最該注意的是「Wiki 整理（concept 頁）」節點</strong>。</p>
+<ul>
+<li>4 張失敗的投影片裡，有 2 張的錯其實不是生成造成的，而是 concept 頁在整理時就出了問題：</li>
+<li>急診案例只搬了「31%、27%」這兩個結果，<strong>漏掉了「40 次模擬、每次 12 小時」這個條件</strong>，而且那一行沒有標來源 [S8]；</li>
+<li>index 的來源表沒有作者與年份，簡報最後的參考資料頁就沒有根據。</li>
+<li>生成節點本身的錯，則是「好心幫忙」型的：自己把 1.3B 換算成「13 億」、自己加上「約 15 分鐘」。內容不一定錯，但已經不是從 Wiki 來的了。</li>
+<li>另外，<strong>檢查器本身也會出錯</strong>：第一版 check_slides 因為正規式只比對 <code>class="slide"</code>，漏掉了 <code>class="slide cover"</code> 的封面，所有編號都差 1。如果沒注意到「應該有 13 張卻只檢查到 12 張」，就會以為封面沒問題。</li>
+</ul>
+<h2>2. 發現問題後，把檢查往前移到哪一個步驟？</h2>
+<p>從「<strong>簡報檢查</strong>（check_slides）」往前移到「<strong>Wiki 整理後的 lint</strong>（lint_wiki v2）」：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>v1</th>
+<th>v2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lint_wiki</td>
+<td>只檢查結構（連結、孤兒頁、index、frontmatter）</td>
+<td>＋ 含數字的行必須有 <code>[S#]</code></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>＋ concept 頁的數字必須在被引用的來源頁找得到；來源頁的數字必須在 raw 卡片找得到</td>
+</tr>
+</tbody>
+</table>
+<p>移過去之後馬上抓到 3 個問題，其中一個（<code>when-to-review.md</code> 第 10 行沒有 [S8]）正是第 11 張投影片失敗的根源。以後同類錯誤在 ingest 當下就會被擋下來，不用等到做簡報才發現。</p>
+<p><strong>但也發現了限制</strong>：lint 抓得到「寫了但沒來源／對不上」的數字，<strong>抓不到「整理時漏掉的細節」</strong>。「40 次、12 小時」被漏掉這件事，lint 不會報錯，只有在簡報想用它時才會發現。所以簡報檢查還是要留著，兩層檢查都需要。</p>
+<h2>3. 有沒有因此修改 workflow / graph？為什麼？</h2>
+<p>有，改了四個地方：</p>
+<ol>
+<li><strong>lint 加入數字可追溯檢查</strong>（上面說的）：錯誤越早抓，修正成本越低；在 Wiki 修一次，所有引用它的投影片都受益。</li>
+<li><strong>新增「回到 Wiki」這條邊</strong>：簡報檢查失敗時，先判斷根源在哪。根源在 Wiki 就回去修 Wiki，不在投影片上硬改。否則 Wiki 和簡報會越來越不一致，Wiki 就失去「知識庫」的意義。</li>
+<li><strong>Schema（CLAUDE.md）新增規則</strong>：「數字要連同條件一起搬」、「index 要有作者／年份」、「（綜合：說明）標記」。把這次學到的事寫進 schema，下一次 ingest 時 LLM 就會照做，這正是 LLM Wiki「人與 LLM 共同演進 schema」的用意。</li>
+<li><strong>最後保留人工視覺檢查</strong>：版面被撐開、文字被遮住這種問題，程式檢查完全看不到，必須靠人看截圖。</li>
+</ol>
+<h2>4. 心得</h2>
+<p>這次做的流程，剛好就是簡報在講的主題：<strong>AI 生成內容時，人與檢查應該放在哪裡</strong>。</p>
+<ul>
+<li>不是每一步都要人看（太貴），而是把人放在「選題、確認大綱、最後看版面」這種<strong>人做很快、AI 錯了代價很大</strong>的位置；</li>
+<li>能用程式檢查的（數字、來源）交給程式；</li>
+<li>檢查器自己也會錯，所以「檢查結果的數量對不對」本身也值得看一眼。</li>
+</ul><p style="margin-top:48px;font-size:13px;color:var(--muted)">原始檔：<code>docs/reflection.md</code></p></main>
+<script type="module">
+if (document.querySelector('.mermaid')) {
+  const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  m.default.initialize({ startOnLoad: true, theme: 'neutral' });
+}
+</script>
+</body></html>

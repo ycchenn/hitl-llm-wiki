@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loop / Graph 設計：從資料到教學簡報 · HITL LLM Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f1e7;--ink:#1f2a2e;--muted:#5b6669;--line:#d9d0bf;--teal:#0f5257;--amber:#c8781b;--card:#fffdf8}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.8 "Noto Sans TC",system-ui,sans-serif}
+header{background:var(--teal);color:#fff;padding:12px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header a{color:#f5e3c8;text-decoration:none;font-size:15px} header b{font-family:"Noto Serif TC",serif;margin-right:auto}
+main{max-width:860px;margin:0 auto;padding:32px 22px 80px}
+h1,h2{font-family:"Noto Serif TC",serif;line-height:1.35} h1{font-size:30px} h2{font-size:23px;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px}
+a{color:var(--teal)} code{background:#ece5d6;padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:14px;line-height:1.5}
+pre code{background:none;padding:0} table{border-collapse:collapse;width:100%;font-size:15px;margin:1em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top} th{background:#ece5d6}
+blockquote{margin:1em 0;padding:8px 16px;background:#f5e3c8;border-left:4px solid var(--amber);border-radius:6px}
+.fm{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:18px}
+.mermaid{background:var(--card);text-align:center}
+</style></head><body>
+<header><b>HITL · LLM Wiki</b>
+<a href="../index.html">首頁</a><a href="../wiki/index.html">Wiki 索引</a>
+<a href="../slides/index.html">教學簡報</a><a href="../docs/workflow.html">Loop / Graph</a>
+<a href="../docs/run-log.html">執行紀錄</a><a href="../docs/reflection.html">反思</a></header>
+<main><h1>Loop / Graph 設計：從資料到教學簡報</h1>
+<blockquote>
+<p>這份流程本身就是一個 Human-in-the-loop 系統：人負責選題、確認大綱、最後檢視；
+LLM 負責整理與生成；<strong>程式化的檢查</strong>負責擋住「沒有來源的內容」。</p>
+</blockquote>
+<h2>1. 流程圖（v2，實際執行後修改過的版本）</h2>
+<pre class="mermaid">flowchart TD
+    H0([👤 人：選主題、聽眾]):::human --&gt; D1[討論：LLM 搜尋並提出&lt;br&gt;資料清單 + 簡報大綱]
+    D1 --&gt; H1{👤 人確認？}:::human
+    H1 -- 修改 --&gt; D1
+    H1 -- 可以 --&gt; I1
+
+    subgraph INGEST[&quot;① Ingest loop（每份資料跑一次，共 8 次）&quot;]
+      I1[讀資料 → 寫 raw/ source card] --&gt; I2[寫 wiki/sources/ 摘要頁]
+      I2 --&gt; I3[更新 concepts/ 頁 + index + overview + log]
+      I3 --&gt; L1{{lint_wiki.py&lt;br&gt;結構 + 數字可追溯（v2）}}:::check
+      L1 -- ✗ --&gt; I3
+    end
+
+    L1 -- ✓ 下一份 --&gt; I1
+    L1 -- ✓ 全部完成 --&gt; Q1
+
+    subgraph SLIDES[&quot;② Slide loop（每張投影片）&quot;]
+      Q1[查詢 Wiki：index → 頁面&lt;br&gt;寫 slides/outline.md] --&gt; G1[生成投影片&lt;br&gt;只能用 data-wiki 指定的頁面]
+      G1 --&gt; C1{{check_slides.py&lt;br&gt;數字可追溯 · 字數 · 來源頁腳}}:::check
+      C1 -- ✗ 只重做失敗的那張&lt;br&gt;（最多 3 次） --&gt; G1
+    end
+
+    C1 -- ✗ 根源在 Wiki&lt;br&gt;（缺資料／整理漏掉） --&gt; I3
+    C1 -- ✓ --&gt; H2{👤 人：視覺檢查&lt;br&gt;截圖每一張}:::human
+    H2 -- 版面問題 --&gt; G1
+    H2 -- 可以 --&gt; DONE([發布：GitHub Pages])
+
+    classDef human fill:#f5e3c8,stroke:#c8781b,color:#1f2a2e
+    classDef check fill:#d7e7e4,stroke:#0f5257,color:#1f2a2e
+</pre>
+<p>橘色 = 人類檢查點；綠色 = 程式化檢查。</p>
+<h2>2. 每個節點做什麼</h2>
+<table>
+<thead>
+<tr>
+<th>節點</th>
+<th>輸入 → 輸出</th>
+<th>誰做</th>
+<th>檢查</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>討論</td>
+<td>主題 → 資料清單、大綱</td>
+<td>LLM 提案、人決定</td>
+<td>👤 人確認</td>
+</tr>
+<tr>
+<td>取得資料</td>
+<td>網頁／論文 → <code>raw/s&lt;N&gt;-*.md</code></td>
+<td>LLM（WebSearch／WebFetch）</td>
+<td>書目資訊交叉查證（例如 S5 作者再搜一次確認）</td>
+</tr>
+<tr>
+<td>整理：來源頁</td>
+<td>raw → <code>wiki/sources/</code></td>
+<td>LLM</td>
+<td>lint：數字要在 raw 找得到</td>
+</tr>
+<tr>
+<td>整理：概念頁</td>
+<td>多份來源 → <code>wiki/concepts/</code></td>
+<td>LLM</td>
+<td>lint：含數字的行要有 [S#]，數字要在來源頁找得到</td>
+</tr>
+<tr>
+<td>查詢</td>
+<td>Wiki → <code>slides/outline.md</code></td>
+<td>LLM</td>
+<td>每張投影片指定 <code>wiki:</code> 頁面</td>
+</tr>
+<tr>
+<td>生成</td>
+<td>outline + Wiki 頁 → <code>slides/index.html</code></td>
+<td>LLM</td>
+<td>check_slides：數字、字數、頁腳來源</td>
+</tr>
+<tr>
+<td>視覺檢查</td>
+<td>投影片 → 截圖</td>
+<td>人（＋ 無頭瀏覽器截圖）</td>
+<td>👤 版面、可讀性</td>
+</tr>
+</tbody>
+</table>
+<h2>3. 哪些步驟會重複執行？</h2>
+<ol>
+<li><strong>Ingest loop</strong>：每份資料跑一次（共 8 次）。每次都要更新多個 concept 頁、index、log，然後 lint。</li>
+<li><strong>Lint 修正迴圈</strong>：lint 沒過就回到「更新 concept 頁」，直到通過。</li>
+<li><strong>Slide 生成迴圈</strong>：check_slides 沒過，<strong>只重新生成失敗的那幾張</strong>，不整份重做（省時間，也避免改壞已經通過的投影片）。</li>
+<li><strong>回到 Wiki 的長迴圈</strong>：若失敗原因是 Wiki 缺內容或整理錯誤，不在投影片上硬改，而是回到 ingest 的整理節點修 Wiki，再重新檢查。</li>
+</ol>
+<h2>4. 哪些地方需要檢查或重新生成？</h2>
+<table>
+<thead>
+<tr>
+<th>檢查點</th>
+<th>抓什麼</th>
+<th>失敗時</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>👤 討論確認</td>
+<td>主題、聽眾、資料範圍是否正確</td>
+<td>重新提案</td>
+</tr>
+<tr>
+<td>lint_wiki.py</td>
+<td>連結、孤兒頁、index 漏列、frontmatter、<strong>數字沒來源或對不上</strong>（v2）</td>
+<td>修 Wiki 頁</td>
+</tr>
+<tr>
+<td>矛盾檢查（LLM）</td>
+<td>來源互相衝突、過時資訊</td>
+<td>頁面加 ⚠️ 區塊並記 log</td>
+</tr>
+<tr>
+<td>check_slides.py</td>
+<td>投影片上的數字不在 Wiki、字數過多、頁腳來源對不上</td>
+<td>重新生成該張；3 次失敗回 Wiki</td>
+</tr>
+<tr>
+<td>👤 視覺檢查</td>
+<td>版面、留白、遮擋</td>
+<td>調整樣式後重新截圖</td>
+</tr>
+</tbody>
+</table>
+<h2>5. 為什麼這樣設計？</h2>
+<ul>
+<li><strong>可追溯鏈</strong>：簡報 → Wiki concept 頁 → Wiki 來源頁 → raw 卡片 → 原始網址。每一層都能被程式檢查，所以「Wiki 資料與簡報內容有明確對應」不是口頭說說，而是跑得出結果。</li>
+<li><strong>生成節點最容易出錯，所以它的輸入被限制住</strong>：生成投影片時只能讀 <code>data-wiki</code> 指定的頁面，不能用模型自己的記憶。檢查器因此只要比對那幾頁就好。</li>
+<li><strong>數字是最好檢查、也最危險的內容</strong>：數字錯了聽眾最容易被誤導，又最容易用程式比對，所以檢查集中在數字上。</li>
+<li><strong>局部重做</strong>：一張失敗只重做那一張，避免整份重新生成時又產生新的錯誤。</li>
+<li><strong>人放在「便宜但關鍵」的位置</strong>：選題、確認大綱、最後看版面。這些事人做很快，但 AI 做錯的代價很大。這正好就是簡報第 11 張「什麼時候該讓人檢查」的原則。</li>
+</ul><p style="margin-top:48px;font-size:13px;color:var(--muted)">原始檔：<code>docs/workflow.md</code></p></main>
+<script type="module">
+if (document.querySelector('.mermaid')) {
+  const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  m.default.initialize({ startOnLoad: true, theme: 'neutral' });
+}
+</script>
+</body></html>

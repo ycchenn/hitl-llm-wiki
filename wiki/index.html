@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>索引 · HITL LLM Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f1e7;--ink:#1f2a2e;--muted:#5b6669;--line:#d9d0bf;--teal:#0f5257;--amber:#c8781b;--card:#fffdf8}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.8 "Noto Sans TC",system-ui,sans-serif}
+header{background:var(--teal);color:#fff;padding:12px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header a{color:#f5e3c8;text-decoration:none;font-size:15px} header b{font-family:"Noto Serif TC",serif;margin-right:auto}
+main{max-width:860px;margin:0 auto;padding:32px 22px 80px}
+h1,h2{font-family:"Noto Serif TC",serif;line-height:1.35} h1{font-size:30px} h2{font-size:23px;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px}
+a{color:var(--teal)} code{background:#ece5d6;padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:14px;line-height:1.5}
+pre code{background:none;padding:0} table{border-collapse:collapse;width:100%;font-size:15px;margin:1em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top} th{background:#ece5d6}
+blockquote{margin:1em 0;padding:8px 16px;background:#f5e3c8;border-left:4px solid var(--amber);border-radius:6px}
+.fm{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:18px}
+.mermaid{background:var(--card);text-align:center}
+</style></head><body>
+<header><b>HITL · LLM Wiki</b>
+<a href="../index.html">首頁</a><a href="../wiki/index.html">Wiki 索引</a>
+<a href="../slides/index.html">教學簡報</a><a href="../docs/workflow.html">Loop / Graph</a>
+<a href="../docs/run-log.html">執行紀錄</a><a href="../docs/reflection.html">反思</a></header>
+<main><div class="fm">title: 索引 · type: index · sources: [] · updated: 2026-11-21</div><h1>索引（查詢時先讀這頁）</h1>
+<h2>總覽</h2>
+<ul>
+<li><a href="overview.html">總覽：Human-in-the-loop AI</a>：全部來源的綜合與一張圖</li>
+<li><a href="log.html">紀錄</a>：討論、ingest、檢查的時間序紀錄</li>
+</ul>
+<h2>概念（concepts/）</h2>
+<ul>
+<li><a href="concepts/human-in-the-loop.html">Human-in-the-loop 是什麼</a>：定義、三種模式、三個參與階段 · S1 S2 S7</li>
+<li><a href="concepts/rlhf.html">RLHF</a>：ChatGPT 前身如何靠人類排名訓練 · S2</li>
+<li><a href="concepts/automation-bias.html">自動化偏誤</a>：人為什麼會過度相信 AI · S4 S5 S6</li>
+<li><a href="concepts/design-guidelines.html">好的 HITL 設計準則</a>：18 條準則中與介入最相關的 6 條 · S3 S5</li>
+<li><a href="concepts/human-oversight-law.html">法律中的人類監督</a>：EU AI Act 第 14 條的 5 種能力與施行日期 · S6</li>
+<li><a href="concepts/agent-checkpoints.html">AI Agent 的人類檢查點</a>：開頭對齊、檢查點、停止條件 · S7</li>
+<li><a href="concepts/when-to-review.html">什麼時候該讓人檢查 AI？</a>：急診分流案例與三原則 · S8 S5 S3</li>
+</ul>
+<h2>來源（sources/）</h2>
+<table>
+<thead>
+<tr>
+<th>代號</th>
+<th>頁面</th>
+<th>作者／年份</th>
+<th>類型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td><a href="sources/s1-hitl-ml-survey.html">HITL 機器學習綜述</a></td>
+<td>Mosqueira-Rey et al., 2023</td>
+<td>學術綜述</td>
+</tr>
+<tr>
+<td>S2</td>
+<td><a href="sources/s2-instructgpt.html">InstructGPT 與 RLHF</a></td>
+<td>Ouyang et al., 2022</td>
+<td>論文</td>
+</tr>
+<tr>
+<td>S3</td>
+<td><a href="sources/s3-human-ai-guidelines.html">微軟 18 條人機互動準則</a></td>
+<td>Amershi et al., 2019</td>
+<td>論文</td>
+</tr>
+<tr>
+<td>S4</td>
+<td><a href="sources/s4-automation-bias-review.html">自動化自滿與偏誤</a></td>
+<td>Parasuraman &amp; Manzey, 2010</td>
+<td>文獻回顧</td>
+</tr>
+<tr>
+<td>S5</td>
+<td><a href="sources/s5-imperfect-automation.html">不完美自動化實驗</a></td>
+<td>Wickens et al., 2015</td>
+<td>實驗</td>
+</tr>
+<tr>
+<td>S6</td>
+<td><a href="sources/s6-eu-ai-act.html">歐盟 AI 法第 14 條</a></td>
+<td>EU AI Act Art. 14</td>
+<td>法規</td>
+</tr>
+<tr>
+<td>S7</td>
+<td><a href="sources/s7-building-agents.html">Building effective agents</a></td>
+<td>Anthropic, 2024</td>
+<td>業界文章</td>
+</tr>
+<tr>
+<td>S8</td>
+<td><a href="sources/s8-ed-triage.html">急診 AI 分流模擬</a></td>
+<td>陳宥錡, 2026</td>
+<td>本人專案</td>
+</tr>
+</tbody>
+</table><p style="margin-top:48px;font-size:13px;color:var(--muted)">原始檔：<code>wiki/index.md</code></p></main>
+<script type="module">
+if (document.querySelector('.mermaid')) {
+  const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  m.default.initialize({ startOnLoad: true, theme: 'neutral' });
+}
+</script>
+</body></html>

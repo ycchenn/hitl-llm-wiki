@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S1 · HITL 機器學習綜述（Mosqueira-Rey et al.） · HITL LLM Wiki</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f1e7;--ink:#1f2a2e;--muted:#5b6669;--line:#d9d0bf;--teal:#0f5257;--amber:#c8781b;--card:#fffdf8}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.8 "Noto Sans TC",system-ui,sans-serif}
+header{background:var(--teal);color:#fff;padding:12px 24px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header a{color:#f5e3c8;text-decoration:none;font-size:15px} header b{font-family:"Noto Serif TC",serif;margin-right:auto}
+main{max-width:860px;margin:0 auto;padding:32px 22px 80px}
+h1,h2{font-family:"Noto Serif TC",serif;line-height:1.35} h1{font-size:30px} h2{font-size:23px;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px}
+a{color:var(--teal)} code{background:#ece5d6;padding:1px 5px;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:14px;line-height:1.5}
+pre code{background:none;padding:0} table{border-collapse:collapse;width:100%;font-size:15px;margin:1em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top} th{background:#ece5d6}
+blockquote{margin:1em 0;padding:8px 16px;background:#f5e3c8;border-left:4px solid var(--amber);border-radius:6px}
+.fm{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:18px}
+.mermaid{background:var(--card);text-align:center}
+</style></head><body>
+<header><b>HITL · LLM Wiki</b>
+<a href="../../index.html">首頁</a><a href="../../wiki/index.html">Wiki 索引</a>
+<a href="../../slides/index.html">教學簡報</a><a href="../../docs/workflow.html">Loop / Graph</a>
+<a href="../../docs/run-log.html">執行紀錄</a><a href="../../docs/reflection.html">反思</a></header>
+<main><div class="fm">title: S1 · HITL 機器學習綜述（Mosqueira-Rey et al.） · type: source · sources: [S1] · updated: 2026-11-21</div><h1>S1 · Human-in-the-loop machine learning: a state of the art</h1>
+<p><strong>一句話</strong>：把「人參與機器學習」的各種方式整理成一張地圖，關鍵分類軸是「<strong>誰掌控學習過程</strong>」。 [S1]</p>
+<ul>
+<li>出處：Mosqueira-Rey et al., <em>Artificial Intelligence Review</em> 56, 3005–3054（2023）。原始卡片：<code>raw/s1-mosqueira-rey-2022.md</code></li>
+<li>類型：學術綜述</li>
+</ul>
+<h2>重點</h2>
+<ul>
+<li>HITL-ML 的目標不只是讓模型更準，也是讓「人」用得更有效率。 [S1]</li>
+<li>三種模式：主動學習（系統主導）、互動式機器學習（人機頻繁來回）、機器教學（專家主導）。 [S1]</li>
+<li>其他參與方式：課程學習、可解釋 AI。 [S1]</li>
+<li>批評「模型做完就上線、人不再參與」的傳統做法。 [S1]</li>
+</ul>
+<h2>用在哪些頁面</h2>
+<ul>
+<li><a href="../concepts/human-in-the-loop.html">Human-in-the-loop 是什麼</a></li>
+</ul><p style="margin-top:48px;font-size:13px;color:var(--muted)">原始檔：<code>wiki/sources/s1-hitl-ml-survey.md</code></p></main>
+<script type="module">
+if (document.querySelector('.mermaid')) {
+  const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  m.default.initialize({ startOnLoad: true, theme: 'neutral' });
+}
+</script>
+</body></html>
